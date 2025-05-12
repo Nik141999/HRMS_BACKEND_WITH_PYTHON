@@ -11,7 +11,7 @@ class UserBase(DeclarativeBase):
 class User(UserBase):
     __tablename__ = 'users'
 
-    id = Column(VARCHAR(512),primary_key=True,default=generate_uuid())
+    id = Column(VARCHAR(512),primary_key=True,default=generate_uuid)
     email = Column(String(90), unique=True, index=True)
     username = Column(String(50), unique=True, index=True)
     password = Column(String(255), nullable=False) 
