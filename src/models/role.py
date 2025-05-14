@@ -12,8 +12,10 @@ class RoleBase(DeclarativeBase):
 class Role(RoleBase):
     __tablename__ = 'roles'
 
-    id = Column(VARCHAR(512), primary_key=True, default=generate_uuid())
-    role_name = Column(String(50), unique=True, index=True, nullable=False)
+    id = Column(VARCHAR(512), primary_key=True, default=generate_uuid)
+    role_type = Column(String(50), unique=True, index=True, nullable=False)
     permission = Column(JSON, nullable=True)  
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())  
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(),server_default=func.now())  
+    
+    
