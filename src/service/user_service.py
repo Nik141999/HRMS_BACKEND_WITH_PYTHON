@@ -5,7 +5,8 @@ from src.dao.user_dao import (
     create_user_in_db,
     update_user_in_db,
     delete_user_from_db,
-    get_all_users
+    get_all_users,
+    get_role_by_name
 )
 from src.schemas.user import UserCreate, UserResponse
 from src.utils.auth import get_hash_password
@@ -14,9 +15,14 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
     existing_user = await get_user_by_email(db, user.email)
     if existing_user:
         raise ValueError("Email already registered")
+
+    role = await get_role_by_name(db, user.role_type)
+    if not role:
+        raise ValueError("Invalid role_type")
+
     hashed_password = get_hash_password(user.password)
-    new_user = await create_user_in_db(db, user.email, hashed_password)
-    return UserResponse(id=new_user.id, email=new_user.email)
+    new_user = await create_user_in_db(db, user.email, hashed_password, role.id)
+    return UserResponse(id=new_user.id, email=new_user.email, role_id=new_user.role_id)
 
 async def get_user_service(user_id: str, db: AsyncSession) -> UserResponse:
     user = await get_user_by_id(db, user_id)

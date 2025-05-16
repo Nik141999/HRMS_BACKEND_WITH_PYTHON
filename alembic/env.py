@@ -5,8 +5,10 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from src.models.user import UserBase
-from src.models.role import RoleBase
+from src.models.user import User
+from src.models.role import Role
+
+from src.database import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,11 +23,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = [
-    UserBase.metadata,
-    RoleBase.metadata,
-
-]
+target_metadata = Base.metadata,
+    
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -4,6 +4,7 @@ from typing import Optional
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+    role_type: str
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -12,6 +13,7 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: EmailStr
+    role_id: Optional[str] = None
 
     model_config = {
         "from_attributes": True
@@ -20,7 +22,7 @@ class UserResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-    role: str 
+    role_type: str 
     
 
 class TokenData(BaseModel):

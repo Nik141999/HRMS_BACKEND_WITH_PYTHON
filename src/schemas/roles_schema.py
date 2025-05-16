@@ -16,7 +16,7 @@ class RoutePermission(BaseModel):
 
 
 class RoleBase(BaseModel):
-    role_name: str = Field(..., example="Admin")
+    role_type: str = Field(..., example="Admin")  # changed role_name to role_type
     permission: Optional[List[RoutePermission]] = Field(default_factory=list)
 
 
@@ -25,7 +25,7 @@ class RoleCreate(RoleBase):
 
 
 class RoleUpdate(BaseModel):
-    role_name: Optional[str] = None
+    role_type: Optional[str] = None  # changed role_name to role_type
     permission: Optional[List[RoutePermission]] = None
 
 
