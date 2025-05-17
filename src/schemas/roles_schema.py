@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field
 
 
 class PermissionActions(BaseModel):
-    edit: bool
-    view: bool
-    create: bool
-    delete: bool
+    edit: bool = False
+    view: bool = False  
+    create: bool = False
+    delete: bool = False
 
 
 class RoutePermission(BaseModel):

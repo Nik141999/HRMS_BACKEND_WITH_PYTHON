@@ -1,15 +1,21 @@
-from typing import Optional,Dict
-from datetime import datetime, timedelta,timezone
+from typing import Optional, Dict
+from datetime import datetime, timedelta, timezone
 
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from jose import JWTError, jwt
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
+
 from src.models.user import User
 from src import config
+from src.database import get_db
 
- 
+oauth2_scheme = APIKeyHeader(name="Authorization")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = config.SECRET_KEY
@@ -46,5 +52,34 @@ def create_access_token(
     else:
         expire = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
+    print(f"Token data: {to_encode}")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+    )
+    try:
+        if token.startswith("Bearer "):
+            token = token[len("Bearer "):]
+
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    result = await db.execute(select(User).filter(User.email == email))
+    user = result.scalars().first()
+    if user is None:
+        raise credentials_exception
+    return user
+
+

@@ -5,7 +5,9 @@ from src.database import get_db
 from src.service.user_service import create_user_service
 from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
-from src.utils.auth import authenticate_user, create_access_token
+from src.utils.auth import authenticate_user, create_access_token, get_current_user
+from src.models.user import User
+
 
 router = APIRouter(
     prefix="/auth",
@@ -46,7 +48,7 @@ async def login_user(
             detail="Invalid email or password",
         )
 
-    access_token_expires = timedelta(minutes=10)
+    access_token_expires = timedelta(minutes=60)
     access_token = create_access_token(
         data={"sub": user.email, "role_type": user.role_id},
         expires_delta=access_token_expires
@@ -57,3 +59,11 @@ async def login_user(
         token_type="bearer",
         role_type=user.role_id
     )
+
+@router.get("/me")
+async def read_logged_in_user(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "role": current_user.role_id
+    }

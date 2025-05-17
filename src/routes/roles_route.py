@@ -3,8 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
 from src.schemas.roles_schema import RoleCreate, RoleUpdate, RoleOut
 from src.controller.role_controller import RoleController
+from src.utils.auth import get_current_user
 
-router = APIRouter(prefix="/roles", tags=["Roles"])
+router = APIRouter(prefix="/roles", tags=["Roles"], dependencies=[Depends(get_current_user)])
 controller = RoleController()
 
 @router.get("/get-roles", response_model=list[RoleOut])
