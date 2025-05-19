@@ -21,5 +21,6 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     role = relationship("Role",back_populates="user",lazy="selectin")
+    leaves = relationship("Leave", back_populates="user", lazy="selectin")
 
     
