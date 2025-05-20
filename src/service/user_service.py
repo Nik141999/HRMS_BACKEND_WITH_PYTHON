@@ -21,25 +21,58 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
         raise ValueError("Invalid role_type")
 
     hashed_password = get_hash_password(user.password)
-    new_user = await create_user_in_db(db, user.email, hashed_password, role.id)
-    return UserResponse(id=new_user.id, email=new_user.email, role_id=new_user.role_id)
+    new_user = await create_user_in_db(
+        db,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        hashed_password=hashed_password,
+        role_id=role.id
+    )
+    return UserResponse(
+        id=new_user.id,
+        email=new_user.email,
+        role_id=new_user.role_id,
+        first_name=new_user.first_name,
+        last_name=new_user.last_name
+    )
 
 async def get_user_service(user_id: str, db: AsyncSession) -> UserResponse:
     user = await get_user_by_id(db, user_id)
     if not user:
         raise ValueError("User not found")
-    return UserResponse(id=user.id, email=user.email)
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        role_id=user.role_id,
+        first_name=user.first_name,
+        last_name=user.last_name
+    )
 
 async def get_all_users_service(db: AsyncSession):
     users = await get_all_users(db)
-    return [UserResponse(id=user.id, email=user.email) for user in users]
-    
+    return [
+        UserResponse(
+            id=user.id,
+            email=user.email,
+            role_id=user.role_id,
+            first_name=user.first_name,
+            last_name=user.last_name
+        )
+        for user in users
+    ]
 
 async def update_user_service(user_id: str, new_email: str, db: AsyncSession) -> UserResponse:
     user = await update_user_in_db(db, user_id, new_email)
     if not user:
         raise ValueError("User not found")
-    return UserResponse(id=user.id, email=user.email)
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        role_id=user.role_id,
+        first_name=user.first_name,
+        last_name=user.last_name
+    )
 
 async def delete_user_service(user_id: str, db: AsyncSession):
     user = await delete_user_from_db(db, user_id)

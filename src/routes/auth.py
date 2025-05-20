@@ -10,7 +10,6 @@ from src.models.user import User
 
 
 router = APIRouter(
-    prefix="/auth",
     tags=["authentication"]
 )
 

@@ -13,7 +13,8 @@ class User(Base):
     id = Column(VARCHAR(512),primary_key=True,default=generate_uuid)
     role_id = Column(VARCHAR(512), ForeignKey("roles.id"), nullable=False)
 
-    
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
     email = Column(String(90), unique=True, index=True)
     username = Column(String(50), unique=True, index=True)
     password = Column(String(255), nullable=False) 
