@@ -20,7 +20,6 @@ async def register_user(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        # Reuse create_user_service which handles role validation & creation
         created_user = await create_user_service(user, db)
         return created_user
     except ValueError as e:
@@ -47,16 +46,16 @@ async def login_user(
             detail="Invalid email or password",
         )
 
-    access_token_expires = timedelta(minutes=60)
+    access_token_expires = timedelta(minutes=960)
     access_token = create_access_token(
-        data={"sub": user.email, "role_type": user.role_id},
+        data={"sub": user.email, "role_type": user.role.role_type},
         expires_delta=access_token_expires
     )
 
     return Token(
         access_token=access_token,
         token_type="bearer",
-        role_type=user.role_id
+        role_type=user.role.role_type ,
     )
 
 @router.get("/me")
