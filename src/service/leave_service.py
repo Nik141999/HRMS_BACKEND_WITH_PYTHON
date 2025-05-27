@@ -13,8 +13,8 @@ async def create_leave_service(leave: LeaveCreate, db: AsyncSession, user_id: st
     new_leave = await create_leave_in_db(db, leave, user_id)
     return LeaveResponse.model_validate(new_leave)
 
-async def get_all_leaves_service(db: AsyncSession, user_id: str):
-    leaves = await get_all_leaves_by_user_id(db, user_id)
+async def get_all_leaves_service(db: AsyncSession):
+    leaves = await get_all_leaves_by_user_id(db)
     return [LeaveResponse.model_validate(leave) for leave in leaves]
 
 async def update_leave_service(leave_id: int, leave: LeaveUpdate, db: AsyncSession, user_id: str):

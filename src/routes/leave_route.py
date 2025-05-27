@@ -25,9 +25,9 @@ async def create_leave(
 @router.get("/leaves", response_model=list[LeaveResponse],dependencies=[Depends(PermissionChecker("/leaves", "view"))])
 async def get_all_leaves(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    # current_user: User = Depends(get_current_user),
 ):
-    return await get_all_leaves_controller(db, current_user.id)
+    return await get_all_leaves_controller(db)
 
 @router.put("/leaves/{leave_id}", response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("/leaves/{leave_id}", "edit"))])
 async def update_leave(

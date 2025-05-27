@@ -16,8 +16,8 @@ async def create_leave_in_db(db: AsyncSession, leave: LeaveCreate, user_id: str)
     await db.refresh(new_leave)
     return new_leave
 
-async def get_all_leaves_by_user_id(db: AsyncSession, user_id: str):
-    result = await db.execute(select(Leave).where(Leave.user_id == user_id))
+async def get_all_leaves_by_user_id(db: AsyncSession):
+    result = await db.execute(select(Leave))
     return result.scalars().all()
 
 async def get_leave_by_id_and_user(db: AsyncSession, leave_id: int, user_id: str):
