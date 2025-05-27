@@ -1,6 +1,11 @@
 from enum import Enum
 
 class LeaveStatus(str, Enum):
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
-    PENDING = "pending"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+    PENDING = "PENDING"
+
+    
+class LeaveType(str, Enum):
+    SICK = "SICK"
+    CASUAL = "CASUAL"    
