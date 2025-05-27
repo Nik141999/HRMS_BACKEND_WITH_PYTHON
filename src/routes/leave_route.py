@@ -14,7 +14,7 @@ from src.models.user import User
 
 router = APIRouter(tags=["Leave"])
 
-@router.post("/create_leave", response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("/create_leave", "create"))])
+@router.post("/leaves", response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("/leaves", "create"))])
 async def create_leave(
     leave: LeaveCreate,
     db: AsyncSession = Depends(get_db),
@@ -29,7 +29,7 @@ async def get_all_leaves(
 ):
     return await get_all_leaves_controller(db, current_user.id)
 
-@router.put("/update_leave/{leave_id}", response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("/update_leave/{leave_id}", "edit"))])
+@router.put("/leaves/{leave_id}", response_model=LeaveResponse,dependencies=[Depends(PermissionChecker("/leaves/{leave_id}", "edit"))])
 async def update_leave(
     leave_id: str,
     leave: LeaveUpdate,
@@ -38,7 +38,7 @@ async def update_leave(
 ):
     return await update_leave_controller(leave_id, leave, db, current_user.id)
 
-@router.delete("/delete_leave/{leave_id}",dependencies=[Depends(PermissionChecker("/delete_leave/{leave_id}", "delete"))])
+@router.delete("/leaves/{leave_id}",dependencies=[Depends(PermissionChecker("/leaves/{leave_id}", "delete"))])
 async def delete_leave(
     leave_id: str,
     db: AsyncSession = Depends(get_db),

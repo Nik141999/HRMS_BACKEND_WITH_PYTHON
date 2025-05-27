@@ -15,11 +15,11 @@ from src.database import get_db
 
 router = APIRouter(tags=["User"], dependencies=[Depends(get_current_user)])
 
-@router.post("/create_user", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/create_user", "create"))])
+@router.post("/users", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/users", "create"))])
 async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return await create_user_controller(user, db)
 
-@router.get("/user/{user_id}", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/user/{user_id}", "view"))])
+@router.get("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/users/{user_id}", "view"))])
 async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):
     return await get_user_controller(user_id, db)
 
@@ -27,10 +27,10 @@ async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):
 async def get_all_users(db: AsyncSession = Depends(get_db)):
     return await get_all_users_controller(db)
 
-@router.put("/user/{user_id}", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/user/{user_id}", "edit"))])
+@router.put("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/users/{user_id}", "edit"))])
 async def update_user(user_id: str, email: str, db: AsyncSession = Depends(get_db)):
     return await update_user_controller(user_id, email, db)
 
-@router.delete("/user/{user_id}", dependencies=[Depends(PermissionChecker("/user/{user_id}", "delete"))])
+@router.delete("/users/{user_id}", dependencies=[Depends(PermissionChecker("/users/{user_id}", "delete"))])
 async def delete_user(user_id: str, db: AsyncSession = Depends(get_db)):
     return await delete_user_controller(user_id, db)

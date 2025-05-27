@@ -11,7 +11,6 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
 class UserResponse(BaseModel):
     id: str
     first_name: str
@@ -23,6 +22,12 @@ class UserResponse(BaseModel):
         "from_attributes": True
     }
 
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    role_type: str
+    user: UserResponse
+    
 class Token(BaseModel):
     access_token: str
     token_type: str

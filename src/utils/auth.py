@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from jose import JWTError, jwt
 
 from fastapi import Depends, HTTPException, status
@@ -33,14 +34,15 @@ async def authenticate_user(
     email: str,
     password: str
 ):
-    result = await db.execute(select(User).filter(User.email == email))
+    result = await db.execute(
+        select(User).options(selectinload(User.role)).where(User.email == email)
+    )
     user = result.scalars().first()
-    if not user:
+    
+    if not user or not verify_password(password, user.password):
         return False
-    if not verify_password(password, user.password):
-        return False
+    
     return user
-
 
 def create_access_token(
     data: Dict[str, str],
@@ -52,7 +54,6 @@ def create_access_token(
     else:
         expire = datetime.now(tz=timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    print(f"Token data: {to_encode}")
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
