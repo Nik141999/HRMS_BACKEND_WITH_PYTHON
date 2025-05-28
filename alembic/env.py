@@ -8,6 +8,7 @@ from alembic import context
 from src.models.user import User
 from src.models.role import Role
 from src.models.leave import Leave
+from src.models.organization import Organization
 
 from src.database import Base
 
