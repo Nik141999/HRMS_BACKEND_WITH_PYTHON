@@ -24,20 +24,31 @@ async def get_all_users(db: AsyncSession):
     result = await db.execute(select(User))
     return result.scalars().all()
 
-async def create_user_in_db(db: AsyncSession, first_name: str, last_name: str, email: str, hashed_password: str, role_id: str,department_id: str):
+async def create_user_in_db(
+    db: AsyncSession,
+    first_name: str,
+    last_name: str,
+    email: str,
+    hashed_password: str,
+    role_id: str,
+    department_id: str,
+    organization_id: str  
+):
     new_user = User(
         first_name=first_name,
         last_name=last_name,
         email=email,
         password=hashed_password,
         role_id=role_id,
-        department_id=department_id 
-        
+        department_id=department_id,
+        organization_id=organization_id  
     )
     db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
+    print(f"New user created with department_id: {new_user.department_id}")
     return new_user
+
 
 async def update_user_in_db(db: AsyncSession, user_id: str, new_email: str):
     user = await get_user_by_id(db, user_id)

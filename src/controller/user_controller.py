@@ -9,11 +9,11 @@ from src.service.user_service import (
     get_all_users_service
 )
 
-async def create_user_controller(user: UserCreate, db: AsyncSession):
+async def create_user_controller(user: UserCreate, db: AsyncSession, org_id: str):
     try:
-        return await create_user_service(user, db)
+        return await create_user_service(user, db, org_id)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 async def get_user_controller(user_id: str, db: AsyncSession):
     try:

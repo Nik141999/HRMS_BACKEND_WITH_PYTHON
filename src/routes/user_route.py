@@ -16,8 +16,14 @@ from src.database import get_db
 router = APIRouter(tags=["User"], dependencies=[Depends(get_current_user)])
 
 @router.post("/users", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/users", "create"))])
-async def create_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
-    return await create_user_controller(user, db)
+async def create_user(
+    user: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)  
+):
+    org_id = current_user.token_org_id  
+    return await create_user_controller(user, db, org_id)
+
 
 @router.get("/users/{user_id}", response_model=UserResponse, dependencies=[Depends(PermissionChecker("/users/{user_id}", "view"))])
 async def get_user(user_id: str, db: AsyncSession = Depends(get_db)):

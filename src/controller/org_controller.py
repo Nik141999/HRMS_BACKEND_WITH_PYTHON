@@ -5,7 +5,6 @@ from src.service.org_service import *
 
 async def create_org_controller(org: OrgCreate, db: AsyncSession):
     try:
-        print("Creating organization with data:", org,'====',db)
         return await create_org_service(org, db)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

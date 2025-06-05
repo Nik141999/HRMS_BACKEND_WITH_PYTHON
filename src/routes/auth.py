@@ -14,22 +14,6 @@ router = APIRouter(
     tags=["authentication"]
 )
 
-
-# @router.post("/register", response_model=UserResponse)
-# async def register_user(
-#     user: UserCreate,
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     try:
-#         created_user = await create_user_service(user, db)
-#         return created_user
-#     except ValueError as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=str(e)
-#         )
-
-
 @router.post("/login", response_model=LoginResponse)
 async def login_user(
     login_data: UserLogin,
@@ -49,7 +33,7 @@ async def login_user(
 
     access_token_expires = timedelta(minutes=960)
     access_token = create_access_token(
-        data={"sub": user.email, "role_type": user.role.role_type},
+        data={"sub": user.email, "role_type": user.role.role_type,"org_id": user.organization_id},
         expires_delta=access_token_expires
     )
 
@@ -62,7 +46,8 @@ async def login_user(
             first_name=user.first_name,
             last_name=user.last_name,
             email=user.email,
-            role_id=user.role_id
+            role_id=user.role_id,
+            department_id= user.department_id,
         )
     )
     

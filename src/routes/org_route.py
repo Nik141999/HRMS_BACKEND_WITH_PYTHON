@@ -5,7 +5,7 @@ from src.controller.org_controller import *
 from src.schemas.org_schema import OrgCreate, OrgUpdate, OrgResponse
 from src.database import get_db
 
-router = APIRouter(tags=["Organization"],dependencies=[Depends(get_current_user)])
+router = APIRouter(tags=["Organization"])
 
 @router.post("/organization", response_model=OrgResponse)
 async def create_organization(org: OrgCreate, db: AsyncSession = Depends(get_db)):

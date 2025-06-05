@@ -13,7 +13,7 @@ from src.schemas.user import UserCreate, UserResponse
 from src.utils.auth import get_hash_password
 from src.utils.email_sender import send_credentials_email
 
-async def create_user_service(user: UserCreate, db: AsyncSession) -> UserResponse:
+async def create_user_service(user: UserCreate, db: AsyncSession, org_id: str) -> UserResponse:
     existing_user = await get_user_by_email(db, user.email)
     if existing_user:
         raise ValueError("Email already registered")
@@ -22,13 +22,12 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
     if not role:
         raise ValueError("Invalid role_type")
 
-    hashed_password = get_hash_password(user.password)
-    
     department = await get_department_by_name(db, user.department_name)
     if not department:
         raise ValueError("Invalid department")
-    
-    
+
+    hashed_password = get_hash_password(user.password)
+
     new_user = await create_user_in_db(
         db,
         first_name=user.first_name,
@@ -36,9 +35,17 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
         email=user.email,
         hashed_password=hashed_password,
         role_id=role.id,
-        department_id= department.id
+        department_id=department.id,
+        organization_id=org_id  # ✅ Added org_id
     )
+    print(f"Department found: {department}")
+    print(f"Department ID: {department.id}")
+
     send_credentials_email(to_email=user.email, user_email=user.email, password=user.password)
+    
+    print(f"Returning user with department_id: {new_user.department_id}")
+
+
     return UserResponse(
         id=new_user.id,
         email=new_user.email,
@@ -47,6 +54,7 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
         first_name=new_user.first_name,
         last_name=new_user.last_name
     )
+
 
 async def get_user_service(user_id: str, db: AsyncSession) -> UserResponse:
     user = await get_user_by_id(db, user_id)
