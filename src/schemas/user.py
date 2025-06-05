@@ -7,16 +7,18 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role_type: str
+    department_name: str
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
 class UserResponse(BaseModel):
     id: str
-    first_name: str
-    last_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: EmailStr
     role_id: Optional[str] = None
+    department_id: Optional[str] = None
 
     model_config = {
         "from_attributes": True

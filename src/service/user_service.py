@@ -6,10 +6,12 @@ from src.dao.user_dao import (
     update_user_in_db,
     delete_user_from_db,
     get_all_users,
-    get_role_by_name
+    get_role_by_name,
+    get_department_by_name
 )
 from src.schemas.user import UserCreate, UserResponse
 from src.utils.auth import get_hash_password
+from src.utils.email_sender import send_credentials_email
 
 async def create_user_service(user: UserCreate, db: AsyncSession) -> UserResponse:
     existing_user = await get_user_by_email(db, user.email)
@@ -21,18 +23,27 @@ async def create_user_service(user: UserCreate, db: AsyncSession) -> UserRespons
         raise ValueError("Invalid role_type")
 
     hashed_password = get_hash_password(user.password)
+    
+    department = await get_department_by_name(db, user.department_name)
+    if not department:
+        raise ValueError("Invalid department")
+    
+    
     new_user = await create_user_in_db(
         db,
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
         hashed_password=hashed_password,
-        role_id=role.id
+        role_id=role.id,
+        department_id= department.id
     )
+    send_credentials_email(to_email=user.email, user_email=user.email, password=user.password)
     return UserResponse(
         id=new_user.id,
         email=new_user.email,
         role_id=new_user.role_id,
+        department_id=new_user.department_id,
         first_name=new_user.first_name,
         last_name=new_user.last_name
     )

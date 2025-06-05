@@ -2,9 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.models.role import Role
+from src.models.department import Department
 
 async def get_role_by_name(db: AsyncSession, role_type: str):
     result = await db.execute(select(Role).where(Role.role_type == role_type.lower()))
+    return result.scalars().first()
+
+async def get_department_by_name(db: AsyncSession, department_name: str):
+    result = await db.execute(select(Department).filter(Department.department_name == department_name))
     return result.scalars().first()
 
 async def get_user_by_email(db: AsyncSession, email: str):
@@ -19,13 +24,15 @@ async def get_all_users(db: AsyncSession):
     result = await db.execute(select(User))
     return result.scalars().all()
 
-async def create_user_in_db(db: AsyncSession, first_name: str, last_name: str, email: str, hashed_password: str, role_id: str):
+async def create_user_in_db(db: AsyncSession, first_name: str, last_name: str, email: str, hashed_password: str, role_id: str,department_id: str):
     new_user = User(
         first_name=first_name,
         last_name=last_name,
         email=email,
         password=hashed_password,
-        role_id=role_id
+        role_id=role_id,
+        department_id=department_id 
+        
     )
     db.add(new_user)
     await db.commit()

@@ -15,7 +15,6 @@ from src import config
 from src.database import get_db
 
 oauth2_scheme = APIKeyHeader(name="Authorization")
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -38,7 +37,6 @@ async def authenticate_user(
         select(User).options(selectinload(User.role)).where(User.email == email)
     )
     user = result.scalars().first()
-    
     if not user or not verify_password(password, user.password):
         return False
     

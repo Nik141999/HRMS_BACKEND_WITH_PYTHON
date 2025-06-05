@@ -13,16 +13,21 @@ class User(Base):
 
     id = Column(VARCHAR(512), primary_key=True, default=generate_uuid)
     role_id = Column(VARCHAR(512), ForeignKey("roles.id"), nullable=False)
+    organization_id = Column(VARCHAR(512), ForeignKey("organizations.id"), nullable=True)
+    department_id = Column(VARCHAR(512), ForeignKey("departments.id"), nullable=True)
 
-    first_name = Column(String(50), nullable=False)
-    last_name = Column(String(50), nullable=False)
+    first_name = Column(String(50), nullable=True)
+    last_name = Column(String(50), nullable=True)
     email = Column(String(90), unique=True, index=True)
-    username = Column(String(50), unique=True, index=True)
     password = Column(String(255), nullable=False) 
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now())
+
 
     role = relationship("Role", back_populates="user", lazy="selectin")
+    organization = relationship("Organization", back_populates="user", lazy="selectin")
+    department = relationship("Department", back_populates="user", lazy="selectin")
 
     leaves = relationship(
         "Leave",
