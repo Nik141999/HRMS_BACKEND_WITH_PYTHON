@@ -11,7 +11,7 @@ class OrgCreate(BaseModel):
 
     address: Optional[str] = None
     phone_number: Optional[str] = None
-    industry: Optional[str] = None
+    organization_type: Optional[str] = None
     description: Optional[str] = None
     website: Optional[str] = None
     gst_number: Optional[str] = None
@@ -23,7 +23,7 @@ class OrgUpdate(BaseModel):
 
     address: Optional[str] = None
     phone_number: Optional[str] = None
-    industry: Optional[str] = None
+    organization_type: Optional[str] = None
     description: Optional[str] = None
     website: Optional[str] = None
     gst_number: Optional[str] = None
@@ -37,7 +37,7 @@ class OrgResponse(BaseModel):
 
     address: Optional[str] = None
     phone_number: Optional[str] = None
-    industry: Optional[str] = None
+    organization_type: Optional[str] = None
     description: Optional[str] = None
     website: Optional[str] = None
     gst_number: Optional[str] = None

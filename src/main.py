@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.routes import auth, user_route, roles_route, leave_route, org_route, department_route, time_tracker_route
+from src.routes import auth, user_route, roles_route, leave_route, org_route, department_route, time_tracker_route, org_type_route
 
 app = FastAPI(
     title="HRMS BACKEND APPLICATION",
@@ -32,6 +32,7 @@ app.include_router(roles_route.router)
 app.include_router(leave_route.router)
 app.include_router(department_route.router)
 app.include_router(time_tracker_route.router)
+app.include_router(org_type_route.router)
 @app.get("/", tags=["health"])
 async def health():
     return {"message": "Hello World!"}

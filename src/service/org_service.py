@@ -11,8 +11,12 @@ async def create_org_service(org: OrgCreate, db: AsyncSession) -> OrgResponse:
     if not role:
         raise ValueError("Invalid role_type")
 
+    org_type = await get_org_type_by_name(db, org.organization_type)
+    if not org_type:
+        raise ValueError("Invalid organization_type")
+
     hashed_password = get_hash_password(org.password)
-   
+
     new_org = await create_org_in_db(
         db=db,
         org_name=org.org_name,
@@ -21,13 +25,27 @@ async def create_org_service(org: OrgCreate, db: AsyncSession) -> OrgResponse:
         role_id=role.id,
         address=org.address,
         phone_number=org.phone_number,
-        industry=org.industry,
+        org_type_id=org_type.id,
         description=org.description,
         website=org.website,
         gst_number=org.gst_number,
     )
 
-    return OrgResponse.model_validate(new_org)
+    await db.refresh(new_org, attribute_names=["organization_type"])
+
+    return OrgResponse(
+        id=new_org.id,
+        org_name=new_org.org_name,
+        is_active=new_org.is_active,
+        created_at=new_org.created_at,
+        address=new_org.address,
+        role_type = new_org.role,
+        phone_number=new_org.phone_number,
+        organization_type=new_org.organization_type.org_type,
+        description=new_org.description,
+        website=new_org.website,
+        gst_number=new_org.gst_number,
+    )
 
 async def get_all_org_service(db: AsyncSession):
     orgs = await get_all_org(db)

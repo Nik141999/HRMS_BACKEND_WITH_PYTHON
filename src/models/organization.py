@@ -5,6 +5,7 @@ from sqlalchemy.sql import func
 
 from src.utils.utils import generate_uuid
 from src.database import Base
+from src.models.orgatization_type import OrganizationType
 
 class Organization(Base):
     __tablename__ = 'organizations'
@@ -21,11 +22,14 @@ class Organization(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
+    role_id = Column(VARCHAR(512), ForeignKey("roles.id"), nullable=False)
+    
     org_type_id = Column(VARCHAR(512), ForeignKey("organization_type.id"), nullable=True)
     
     user = relationship("User", back_populates="organization", lazy="selectin")
+    role = relationship("Role", back_populates="organizations", lazy="selectin")
     organization_type = relationship(
-        "OrganizationType",
+        OrganizationType,  
         back_populates="organizations",
         lazy="selectin"
     )

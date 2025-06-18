@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.organization import Organization
+from src.models.orgatization_type import OrganizationType
 from src.models.role import Role
 from src.models.user import User
 from src.utils.utils import generate_otp
@@ -17,6 +18,12 @@ async def get_org_by_email(db: AsyncSession, email: str):
     )
     return result.scalars().first()
 
+async def get_org_type_by_name(db: AsyncSession, org_type_name: str):
+    result = await db.execute(
+        select(OrganizationType).where(OrganizationType.org_type.ilike(org_type_name))
+
+    )
+    return result.scalars().first()
 
 async def get_org_by_id(db: AsyncSession, org_id: str):
     result = await db.execute(select(Organization).where(Organization.id == org_id))
@@ -34,7 +41,7 @@ async def create_org_in_db(
     role_id: str,
     address: str = None,
     phone_number: str = None,
-    industry: str = None,
+    org_type_id: str = None,
     description: str = None,
     website: str = None,
     gst_number: str = None,
@@ -46,36 +53,25 @@ async def create_org_in_db(
 
     if gst_number:
         gst_result = await db.execute(select(Organization).where(Organization.gst_number == gst_number))
-    existing_gst_org = gst_result.scalars().first()  
-    if existing_gst_org:
-        raise ValueError(f"GST number '{gst_number}' is already registered with another organization.")
-
+        existing_gst_org = gst_result.scalars().first()
+        if existing_gst_org:
+            raise ValueError(f"GST number '{gst_number}' is already registered.")
 
     new_org = Organization(
         org_name=org_name,
-        address=address,
-        phone_number=phone_number,
-        industry=industry,
-        description=description,
-        website=website,
-        gst_number=gst_number
-    )
-    db.add(new_org)
-    await db.flush()  
-
-    otp = generate_otp()
-    new_user = User(
         email=email,
         password=hashed_password,
         role_id=role_id,
-        otp=otp,
-        organization_id=new_org.id
+        address=address,
+        phone_number=phone_number,
+        org_type_id=org_type_id,
+        description=description,
+        website=website,
+        gst_number=gst_number,
     )
-    db.add(new_user)
-
+    db.add(new_org)
     await db.commit()
     await db.refresh(new_org)
-    send_otp_email(email, otp)
     return new_org
 
 

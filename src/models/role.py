@@ -16,4 +16,5 @@ class Role(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())  
 
     user = relationship("User", back_populates="role")
+    organizations = relationship("Organization", back_populates="role", lazy="selectin")
     
