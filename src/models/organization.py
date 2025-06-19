@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey,Integer
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -20,6 +20,8 @@ class Organization(Base):
     website = Column(String(255), nullable=True)
     gst_number = Column(VARCHAR(40), nullable=True)
     is_active = Column(Boolean, default=True)
+    otp = Column(Integer, nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     role_id = Column(VARCHAR(512), ForeignKey("roles.id"), nullable=False)

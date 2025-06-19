@@ -1,61 +1,95 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.schemas.user import UserResponse, UserCreate, Token
-from src.database import get_db
-from src.service.user_service import create_user_service
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from datetime import timedelta
-from src.utils.auth import authenticate_user, create_access_token, get_current_user
-from src.models.user import User
-from src.schemas.user import LoginResponse, UserLogin
+from sqlalchemy.ext.asyncio import AsyncSession
 
-
-router = APIRouter(
-    tags=["authentication"]
+from src.schemas.user import (
+    UserLogin, UserLoginResponse, OrgLoginResponse,
+    UserResponse, OrgResponse
 )
+from src.models.user import User
+from src.models.organization import Organization
+from src.utils.auth import authenticate_user, create_access_token
+from src.database import get_db
 
-@router.post("/login", response_model=LoginResponse)
+router = APIRouter(tags=["authentication"])
+
+@router.post("/login")
 async def login_user(
     login_data: UserLogin,
     db: AsyncSession = Depends(get_db)
 ):
-    user = await authenticate_user(
+    authenticated = await authenticate_user(
         db=db,
         email=login_data.email,
         password=login_data.password
     )
 
-    if not user:
+    if not authenticated:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
+            detail="Invalid email or password"
         )
 
     access_token_expires = timedelta(minutes=960)
-    access_token = create_access_token(
-        data={"sub": user.email, "role_type": user.role.role_type,"org_id": user.organization_id},
-        expires_delta=access_token_expires
-    )
 
-    return LoginResponse(
-        access_token=access_token,
-        token_type="bearer",
-        role_type=user.role.role_type,
-        user=UserResponse(
-            id=user.id,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            email=user.email,
-            role_id=user.role_id,
-            department_id= user.department_id,
+    # User login
+    if isinstance(authenticated, User):
+        # Ensure role and department relationships are loaded
+        role_type = authenticated.role.role_type if authenticated.role else None
+        department_name = authenticated.department.department_name if authenticated.department else None
+
+        access_token = create_access_token(
+            data={
+                "sub": authenticated.email,
+                "role_type": role_type,
+                "org_id": authenticated.organization_id,
+            },
+            expires_delta=access_token_expires
         )
-    )
-    
 
-@router.get("/me")
-async def read_logged_in_user(current_user: User = Depends(get_current_user)):
-    return {
-        "id": current_user.id,
-        "email": current_user.email,
-        "role": current_user.role_id
-    }
+        response_data = UserLoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+            role_type=role_type,
+            user=UserResponse(
+                id=authenticated.id,
+                first_name=authenticated.first_name,
+                last_name=authenticated.last_name,
+                email=authenticated.email,
+                role_type=role_type,
+                department_name=department_name
+            )
+        )
+        return JSONResponse(content=response_data.model_dump())
+
+    # Organization login
+    elif isinstance(authenticated, Organization):
+        role_type = authenticated.role.role_type if authenticated.role else "Organization"
+
+        access_token = create_access_token(
+            data={
+                "sub": authenticated.email,
+                "role_type": role_type,
+                "org_id": authenticated.id,
+            },
+            expires_delta=access_token_expires
+        )
+
+        response_data = OrgLoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+            role_type=role_type,
+            organization=OrgResponse(
+                id=authenticated.id,
+                org_name=authenticated.org_name,
+                email=authenticated.email,
+                address=authenticated.address,
+                phone_number=authenticated.phone_number,
+                organization_type=authenticated.organization_type.org_type if authenticated.organization_type else None,
+                description=authenticated.description,
+                website=authenticated.website,
+                gst_number=authenticated.gst_number
+            )
+        )
+        return JSONResponse(content=response_data.model_dump())

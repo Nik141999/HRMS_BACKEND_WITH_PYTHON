@@ -1,8 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
+from sqlalchemy.orm import selectinload
 from src.models.role import Role
 from src.models.department import Department
+from src.schemas.user import UserUpdate
 
 async def get_role_by_name(db: AsyncSession, role_type: str):
     result = await db.execute(select(Role).where(Role.role_type == role_type.lower()))
@@ -21,7 +23,10 @@ async def get_user_by_id(db: AsyncSession, user_id: str):
     return result.scalars().first()
 
 async def get_all_users(db: AsyncSession):
-    result = await db.execute(select(User))
+    result = await db.execute(
+        select(User)
+        .options(selectinload(User.role), selectinload(User.department))
+    )
     return result.scalars().all()
 
 async def create_user_in_db(
@@ -50,13 +55,26 @@ async def create_user_in_db(
     return new_user
 
 
-async def update_user_in_db(db: AsyncSession, user_id: str, new_email: str):
+async def update_user_in_db(db: AsyncSession, user_id: str, new_data: UserUpdate, role=None, department=None):
     user = await get_user_by_id(db, user_id)
-    if user:
-        user.email = new_email
-        await db.commit()
-        await db.refresh(user)
+    if not user:
+        return None
+
+    if new_data.first_name is not None:
+        user.first_name = new_data.first_name
+    if new_data.last_name is not None:
+        user.last_name = new_data.last_name
+    if new_data.email is not None:
+        user.email = new_data.email
+    if role:
+        user.role_id = role.id
+    if department:
+        user.department_id = department.id
+
+    await db.commit()
+    await db.refresh(user)
     return user
+
 
 async def delete_user_from_db(db: AsyncSession, user_id: str):
     user = await get_user_by_id(db, user_id)

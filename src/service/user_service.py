@@ -9,9 +9,10 @@ from src.dao.user_dao import (
     get_role_by_name,
     get_department_by_name
 )
-from src.schemas.user import UserCreate, UserResponse
+from src.schemas.user import UserCreate, UserResponse, UserUpdate
 from src.utils.auth import get_hash_password
 from src.utils.email_sender import send_credentials_email
+
 
 async def create_user_service(user: UserCreate, db: AsyncSession, org_id: str) -> UserResponse:
     existing_user = await get_user_by_email(db, user.email)
@@ -36,16 +37,10 @@ async def create_user_service(user: UserCreate, db: AsyncSession, org_id: str) -
         hashed_password=hashed_password,
         role_id=role.id,
         department_id=department.id,
-        organization_id=org_id  # ✅ Added org_id
+        organization_id=org_id
     )
-    print(f"Department found: {department}")
-    print(f"Department ID: {department.id}")
-
     send_credentials_email(to_email=user.email, user_email=user.email, password=user.password)
     
-    print(f"Returning user with department_id: {new_user.department_id}")
-
-
     return UserResponse(
         id=new_user.id,
         email=new_user.email,
@@ -55,7 +50,6 @@ async def create_user_service(user: UserCreate, db: AsyncSession, org_id: str) -
         last_name=new_user.last_name
     )
 
-
 async def get_user_service(user_id: str, db: AsyncSession) -> UserResponse:
     user = await get_user_by_id(db, user_id)
     if not user:
@@ -63,9 +57,10 @@ async def get_user_service(user_id: str, db: AsyncSession) -> UserResponse:
     return UserResponse(
         id=user.id,
         email=user.email,
-        role_id=user.role_id,
         first_name=user.first_name,
-        last_name=user.last_name
+        last_name=user.last_name,
+        role_type=user.role.role_type if user.role else None,
+        department_name=user.department.department_name if user.department else None
     )
 
 async def get_all_users_service(db: AsyncSession):
@@ -74,24 +69,48 @@ async def get_all_users_service(db: AsyncSession):
         UserResponse(
             id=user.id,
             email=user.email,
-            role_id=user.role_id,
             first_name=user.first_name,
-            last_name=user.last_name
+            last_name=user.last_name,
+            role_type=user.role.role_type if user.role else None,
+            department_name=user.department.department_name if user.department else None
         )
         for user in users
     ]
 
-async def update_user_service(user_id: str, new_email: str, db: AsyncSession) -> UserResponse:
-    user = await update_user_in_db(db, user_id, new_email)
+async def update_user_service(user_id: str, user_update: UserUpdate, db: AsyncSession) -> UserResponse:
+    role = None
+    department = None
+
+    if user_update.role_type:
+        role = await get_role_by_name(db, user_update.role_type)
+        if not role:
+            raise ValueError("Invalid role_type")
+
+    if user_update.department_name:
+        department = await get_department_by_name(db, user_update.department_name)
+        if not department:
+            raise ValueError("Invalid department_name")
+
+    user = await update_user_in_db(
+        db=db,
+        user_id=user_id,
+        new_data=user_update,
+        role=role,
+        department=department
+    )
     if not user:
         raise ValueError("User not found")
+
     return UserResponse(
         id=user.id,
         email=user.email,
-        role_id=user.role_id,
         first_name=user.first_name,
-        last_name=user.last_name
+        last_name=user.last_name,
+        role_type=user.role.role_type if user.role else None,
+        department_name=user.department.department_name if user.department else None
     )
+
+
 
 async def delete_user_service(user_id: str, db: AsyncSession):
     user = await delete_user_from_db(db, user_id)

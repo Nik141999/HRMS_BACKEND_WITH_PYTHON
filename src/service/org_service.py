@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 from src.dao.org_dao import *
 from src.schemas.org_schema import OrgCreate, OrgUpdate, OrgResponse
 from src.utils.auth import get_hash_password
@@ -39,27 +40,55 @@ async def create_org_service(org: OrgCreate, db: AsyncSession) -> OrgResponse:
         is_active=new_org.is_active,
         created_at=new_org.created_at,
         address=new_org.address,
-        role_type = new_org.role,
         phone_number=new_org.phone_number,
-        organization_type=new_org.organization_type.org_type,
+        organization_type=new_org.organization_type.org_type if new_org.organization_type else None,
         description=new_org.description,
         website=new_org.website,
         gst_number=new_org.gst_number,
     )
 
+
 async def get_all_org_service(db: AsyncSession):
     orgs = await get_all_org(db)
-    return [OrgResponse.model_validate(org) for org in orgs]
+    response = []
+    for org in orgs:
+        response.append(OrgResponse(
+            id=org.id,
+            org_name=org.org_name,
+            is_active=org.is_active,
+            created_at=org.created_at,
+            address=org.address,
+            phone_number=org.phone_number,
+            organization_type=org.organization_type.org_type if org.organization_type else None,
+            description=org.description,
+            website=org.website,
+            gst_number=org.gst_number
+        ))
+    return response
+
 
 async def update_org_service(org_id: str, org_data: OrgUpdate, db: AsyncSession) -> OrgResponse:
     update_dict = org_data.dict(exclude_unset=True)
     if "password" in update_dict:
         update_dict["password"] = get_hash_password(update_dict["password"])
-    
+
     org = await update_org_in_db(db, org_id, update_dict)
     if not org:
         raise ValueError("Organization not found")
-    return OrgResponse.model_validate(org)
+
+    return OrgResponse(
+        id=org.id,
+        org_name=org.org_name,
+        is_active=org.is_active,
+        created_at=org.created_at,
+        address=org.address,
+        phone_number=org.phone_number,
+        organization_type=org.organization_type.org_type if org.organization_type else None,
+        description=org.description,
+        website=org.website,
+        gst_number=org.gst_number
+    )
+
 
 async def delete_org_service(org_id: str, db: AsyncSession):
     org = await delete_org_from_db(db, org_id)

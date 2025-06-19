@@ -1,5 +1,10 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
+from datetime import datetime
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 class UserCreate(BaseModel):
     first_name: str
@@ -9,32 +14,43 @@ class UserCreate(BaseModel):
     role_type: str
     department_name: str
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
 class UserResponse(BaseModel):
     id: str
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: Optional[str]
+    last_name: Optional[str]
     email: EmailStr
-    role_id: Optional[str] = None
-    department_id: Optional[str] = None
+    role_type: Optional[str]
+    department_name: Optional[str]
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(from_attributes=True)
+    
+class UserUpdate(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[EmailStr]
+    role_type: Optional[str]
+    department_name: Optional[str]
+class OrgResponse(BaseModel):
+    id: str
+    org_name: str
+    email: str
+    address: Optional[str] = None
+    phone_number: Optional[str] = None
+    organization_type: Optional[str] = None
+    description: Optional[str] = None
+    website: Optional[str] = None
+    gst_number: Optional[str] = None
 
-class LoginResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+class UserLoginResponse(BaseModel):
     access_token: str
     token_type: str
     role_type: str
     user: UserResponse
-    
-class Token(BaseModel):
+
+class OrgLoginResponse(BaseModel):
     access_token: str
     token_type: str
-    role_type: str 
-    
-
-class TokenData(BaseModel):
-    email: Optional[EmailStr] = None
+    role_type: str
+    organization: OrgResponse
